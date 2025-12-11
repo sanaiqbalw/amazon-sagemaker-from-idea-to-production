@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 import mlflow
-import argparse
 from mlflow.data.pandas_dataset import PandasDataset
 from time import gmtime, strftime
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+import argparse
 
 def preprocess(
     input_data_s3_path,
@@ -22,7 +22,7 @@ def preprocess(
         run = mlflow.start_run(run_id=run_id) if run_id else mlflow.start_run(run_name=f"processing-{suffix}", nested=True)
 
         # Load data
-        df_data = pd.read_csv(input_data_s3_path, sep=";")
+        df_data = pd.read_csv(input_data_s3_path, sep=";")[:1000]
 
         input_dataset = mlflow.data.from_pandas(df_data, source=input_data_s3_path)
         mlflow.log_input(input_dataset, context="raw_input")
@@ -73,7 +73,7 @@ def preprocess(
         # Shuffle and split the dataset
         train_data, validation_data, test_data = np.split(
             df_model_data.sample(frac=1, random_state=1729),
-            [int(0.7 * len(df_model_data)), int(0.9 * len(df_model_data))],
+            [int(0.7 * len(df_model_data)), int(0.85 * len(df_model_data))],
         )
     
         print(f"## Data split > train:{train_data.shape} | validation:{validation_data.shape} | test:{test_data.shape}")
@@ -120,6 +120,7 @@ def preprocess(
         raise e
     finally:
         mlflow.end_run()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
