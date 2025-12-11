@@ -2,6 +2,7 @@ import boto3
 import pandas as pd
 import numpy as np
 import mlflow
+import argparse
 from mlflow.data.pandas_dataset import PandasDataset
 from time import gmtime, strftime
 from sagemaker.session import Session
@@ -120,4 +121,24 @@ def prepare_datasets(
         raise e
     finally:
         mlflow.end_run()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--feature-group-name", type=str, required=True)
+    parser.add_argument("--output-s3-prefix", type=str, required=True)
+    parser.add_argument("--query-output-s3-path", type=str, required=True)
+    parser.add_argument("--tracking-server-arn", type=str, required=True)
+    parser.add_argument("--experiment-name", type=str, default=None)
+    parser.add_argument("--pipeline-run-name", type=str, default=None)
+    parser.add_argument("--run-id", type=str, default=None)
+    args = parser.parse_args()
     
+    prepare_datasets(
+        feature_group_name=args.feature_group_name,
+        output_s3_prefix=args.output_s3_prefix,
+        query_output_s3_path=args.query_output_s3_path,
+        tracking_server_arn=args.tracking_server_arn,
+        experiment_name=args.experiment_name,
+        pipeline_run_name=args.pipeline_run_name,
+        run_id=args.run_id,
+    )

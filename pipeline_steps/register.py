@@ -2,6 +2,7 @@ import json
 import sagemaker
 import boto3
 import mlflow
+import argparse
 from time import gmtime, strftime
 from sagemaker.estimator import Estimator
 from sagemaker.model_metrics import (
@@ -91,4 +92,39 @@ def register(
         raise e
     finally:
         mlflow.end_run()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--training-job-name", type=str, required=True)
+    parser.add_argument("--model-package-group-name", type=str, required=True)
+    parser.add_argument("--model-approval-status", type=str, required=True)
+    parser.add_argument("--evaluation-result", type=str, required=True)
+    parser.add_argument("--output-s3-prefix", type=str, required=True)
+    parser.add_argument("--tracking-server-arn", type=str, required=True)
+    parser.add_argument("--model-statistics-s3-path", type=str, default=None)
+    parser.add_argument("--model-constraints-s3-path", type=str, default=None)
+    parser.add_argument("--model-data-statistics-s3-path", type=str, default=None)
+    parser.add_argument("--model-data-constraints-s3-path", type=str, default=None)
+    parser.add_argument("--experiment-name", type=str, default=None)
+    parser.add_argument("--pipeline-run-id", type=str, default=None)
+    parser.add_argument("--run-id", type=str, default=None)
+    args = parser.parse_args()
+    
+    evaluation_result = json.loads(args.evaluation_result) if isinstance(args.evaluation_result, str) else args.evaluation_result
+    
+    register(
+        training_job_name=args.training_job_name,
+        model_package_group_name=args.model_package_group_name,
+        model_approval_status=args.model_approval_status,
+        evaluation_result=evaluation_result,
+        output_s3_prefix=args.output_s3_prefix,
+        tracking_server_arn=args.tracking_server_arn,
+        model_statistics_s3_path=args.model_statistics_s3_path,
+        model_constraints_s3_path=args.model_constraints_s3_path,
+        model_data_statistics_s3_path=args.model_data_statistics_s3_path,
+        model_data_constraints_s3_path=args.model_data_constraints_s3_path,
+        experiment_name=args.experiment_name,
+        pipeline_run_id=args.pipeline_run_id,
+        run_id=args.run_id,
+    )
 

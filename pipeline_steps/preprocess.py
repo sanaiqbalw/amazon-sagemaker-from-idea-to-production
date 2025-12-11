@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import mlflow
+import argparse
 from mlflow.data.pandas_dataset import PandasDataset
 from time import gmtime, strftime
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
@@ -119,3 +120,22 @@ def preprocess(
         raise e
     finally:
         mlflow.end_run()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-data-s3-path", type=str, required=True)
+    parser.add_argument("--output-s3-prefix", type=str, required=True)
+    parser.add_argument("--tracking-server-arn", type=str, required=True)
+    parser.add_argument("--experiment-name", type=str, default=None)
+    parser.add_argument("--pipeline-run-name", type=str, default=None)
+    parser.add_argument("--run-id", type=str, default=None)
+    args = parser.parse_args()
+    
+    preprocess(
+        input_data_s3_path=args.input_data_s3_path,
+        output_s3_prefix=args.output_s3_prefix,
+        tracking_server_arn=args.tracking_server_arn,
+        experiment_name=args.experiment_name,
+        pipeline_run_name=args.pipeline_run_name,
+        run_id=args.run_id,
+    )

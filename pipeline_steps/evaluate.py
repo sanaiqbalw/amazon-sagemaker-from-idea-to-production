@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 import mlflow
+import argparse
+import json
 from time import gmtime, strftime
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
@@ -98,3 +100,29 @@ def evaluate(
         raise e
     finally:
         mlflow.end_run()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test-x-data-s3-path", type=str, required=True)
+    parser.add_argument("--test-y-data-s3-path", type=str, required=True)
+    parser.add_argument("--model-s3-path", type=str, required=True)
+    parser.add_argument("--output-s3-prefix", type=str, required=True)
+    parser.add_argument("--tracking-server-arn", type=str, required=True)
+    parser.add_argument("--experiment-name", type=str, default=None)
+    parser.add_argument("--pipeline-run-id", type=str, default=None)
+    parser.add_argument("--run-id", type=str, default=None)
+    args = parser.parse_args()
+    
+    result = evaluate(
+        test_x_data_s3_path=args.test_x_data_s3_path,
+        test_y_data_s3_path=args.test_y_data_s3_path,
+        model_s3_path=args.model_s3_path,
+        output_s3_prefix=args.output_s3_prefix,
+        tracking_server_arn=args.tracking_server_arn,
+        experiment_name=args.experiment_name,
+        pipeline_run_id=args.pipeline_run_id,
+        run_id=args.run_id,
+    )
+    
+    with open("/opt/ml/processing/output/evaluation.json", "w") as f:
+        json.dump(result, f)

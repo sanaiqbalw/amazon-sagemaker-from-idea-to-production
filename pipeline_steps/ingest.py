@@ -1,4 +1,5 @@
 import boto3
+import argparse
 from sagemaker.feature_store.feature_group import FeatureGroup
 import numpy as np
 import pandas as pd
@@ -84,3 +85,14 @@ def process_and_ingest(
     print(f'{len(df_model_data)} customer records ingested into feature group: {dataset_feature_group.name}')
     
     return dataset_feature_group.describe()['FeatureGroupArn']
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-s3-url", type=str, required=True)
+    parser.add_argument("--feature-group-name", type=str, required=True)
+    args = parser.parse_args()
+    
+    process_and_ingest(
+        input_s3_url=args.input_s3_url,
+        feature_group_name=args.feature_group_name,
+    )
